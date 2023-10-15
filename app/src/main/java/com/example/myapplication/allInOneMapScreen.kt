@@ -4,11 +4,11 @@ import android.content.Context
 import android.graphics.Color
 import android.location.Geocoder
 import android.location.Location
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Transformations.map
 import com.example.myapplication.dynamicpinsview.data.MarkerData
 import com.example.myapplication.dynamicpinsview.data.lat
 import com.example.myapplication.dynamicpinsview.data.lon
@@ -25,12 +25,10 @@ import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.PolygonOptions
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.google.maps.android.SphericalUtil
+import com.google.maps.android.clustering.Cluster
 import com.google.maps.android.clustering.ClusterManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,13 +38,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.BufferedReader
 import java.io.IOException
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.Scanner
 import kotlin.math.absoluteValue
+
 
 class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickListener,
     MapMarkersRenderer.Callback {
@@ -225,6 +220,24 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
             clusterManager = clusterManager,
             boundariesListener = boundariesListener,
         )
+
+        clusterManager.setOnClusterClickListener(object : ClusterManager.OnClusterClickListener<MapMarker> {
+            override fun onClusterClick(cluster: Cluster<MapMarker>): Boolean {
+                if (cluster.items.size > 1) {
+                   // Toast.makeText(this@allInOneMapScreen,"hello",Toast.LENGTH_SHORT).show()
+                    mMap!!.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            cluster.position, Math.floor(
+                                (mMap!!
+                                    .getCameraPosition().zoom + 5).toDouble()
+                            ).toFloat()
+                        ), 300,
+                        null
+                    )
+                }
+                return true
+            }
+        })
 
     }
 

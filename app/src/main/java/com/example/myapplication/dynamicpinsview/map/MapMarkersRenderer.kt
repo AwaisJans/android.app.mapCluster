@@ -97,6 +97,10 @@ internal class MapMarkersRenderer(
             .anchor(data.anchorU, data.anchorV)
     }
 
+
+
+
+
     override fun onClusterUpdated(cluster: Cluster<MapMarker>, marker: Marker) {
         val data = getClusterIcon(cluster)
         marker.setIcon(data.bitmapDescriptor)

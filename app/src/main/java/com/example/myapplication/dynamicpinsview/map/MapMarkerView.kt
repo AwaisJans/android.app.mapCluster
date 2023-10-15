@@ -44,8 +44,6 @@ class MapMarkerView @JvmOverloads constructor(
                 binding.mapMarkerViewClusterText.isVisible = false
                 binding.mapMarkerViewPin.isVisible = false
                 val drawable = ContextCompat.getDrawable(context, R.drawable.baseline_location_on_24)
-
-
                 binding.mapMarkerViewIcon.setImageDrawable(drawable)
             }
         }
