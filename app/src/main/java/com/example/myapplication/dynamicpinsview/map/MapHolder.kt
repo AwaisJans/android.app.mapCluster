@@ -1,0 +1,33 @@
+package com.example.myapplication.dynamicpinsview.map
+
+import com.google.android.gms.maps.GoogleMap
+import com.google.maps.android.clustering.ClusterManager
+import com.example.myapplication.dynamicpinsview.listener.BoundariesListener
+import com.example.myapplication.dynamicpinsview.listener.OnCameraIdleListenerProxy
+
+internal class MapHolder {
+
+    private var googleMap: GoogleMap? = null
+    private var clusterManager: ClusterManager<MapMarker>? = null
+
+    inline fun executeOnClusterManager(consumer: (ClusterManager<MapMarker>) -> Unit) =
+        clusterManager?.let(consumer)
+
+    fun initialize(
+        msMap: GoogleMap,
+        clusterManager: ClusterManager<MapMarker>,
+        boundariesListener: BoundariesListener
+    ) {
+        this.googleMap = msMap
+        this.clusterManager = clusterManager
+
+        msMap.setOnCameraIdleListener(
+            OnCameraIdleListenerProxy(
+                listOf(
+                    boundariesListener,
+                    clusterManager
+                )
+            )
+        )
+    }
+}

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:gravity="center"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".linePolygon">
+
+    <!-- Button to request permissions -->
+    <Button
+        android:id="@+id/btn1"
+        android:layout_width="wrap_content"
+        android:background="@color/black"
+        android:textColor="@color/white"
+        android:padding="20dp"
+        android:minWidth="250dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="line polygon example"
+        android:textAllCaps="false" />
+
+
+    <Button
+        android:id="@+id/btn2"
+        android:layout_width="wrap_content"
+        android:background="@color/black"
+        android:minWidth="250dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/white"
+        android:padding="20dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="circle on map example"
+        android:textAllCaps="false" />
+
+
+
+    <Button
+        android:id="@+id/btn3"
+        android:layout_width="wrap_content"
+        android:background="@color/black"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:textColor="@color/white"
+        android:minWidth="250dp"
+        android:padding="20dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="rectangle on map example"
+        android:textAllCaps="false" />
+
+
+    <Button
+        android:id="@+id/btn4"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="20dp"
+        android:minWidth="250dp"
+        android:layout_gravity="center"
+        android:background="@color/black"
+        android:textColor="@color/white"
+        android:padding="20dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="all in one example"
+        android:textAllCaps="false" />
+
+
+
+</LinearLayout>
