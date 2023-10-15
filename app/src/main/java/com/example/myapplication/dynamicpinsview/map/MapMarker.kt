@@ -16,6 +16,7 @@ data class MapMarker(
 
     override fun getTitle(): String? = null
 
+    // title getter/setter
     override fun getSnippet(): String? = null
 
     sealed interface Icon {
