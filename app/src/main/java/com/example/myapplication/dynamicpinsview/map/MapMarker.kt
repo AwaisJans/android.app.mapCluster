@@ -20,6 +20,7 @@ data class MapMarker(
 
     sealed interface Icon {
 
+        // url initialization
         val url: String
 
         data class Placeholder(override val url: String) : Icon
