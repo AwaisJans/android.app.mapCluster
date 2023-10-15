@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.annotation.ColorInt
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import androidx.core.view.isVisible
 import com.example.myapplication.R
@@ -17,6 +18,7 @@ class MapMarkerView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : ConstraintLayout(context, attrs, defStyleAttr) {
+
 
     private val binding by lazy { ViewMapMarkerBinding.inflate(LayoutInflater.from(context)) }
 
@@ -33,14 +35,17 @@ class MapMarkerView @JvmOverloads constructor(
         when (circle) {
             is CircleContent.Cluster -> {
                 binding.mapMarkerViewClusterText.isVisible = true
+                binding.mapMarkerViewPin.isVisible = true
                 binding.mapMarkerViewClusterText.text = circle.count.toString()
                 binding.mapMarkerViewIcon.setImageResource(R.drawable.white_circle)
             }
 
             is CircleContent.Marker -> {
                 binding.mapMarkerViewClusterText.isVisible = false
-                val icon = circle.mapMarkerIcon
-                val drawable = getIconDrawable(markerIcon = icon)
+                binding.mapMarkerViewPin.isVisible = false
+                val drawable = ContextCompat.getDrawable(context, R.drawable.baseline_location_on_24)
+
+
                 binding.mapMarkerViewIcon.setImageDrawable(drawable)
             }
         }
