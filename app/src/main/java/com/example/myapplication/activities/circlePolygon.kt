@@ -25,6 +25,7 @@ import java.util.Scanner
 class circlePolygon : AppCompatActivity(), OnMapReadyCallback, OnMapClickListener {
     private var mMap: GoogleMap? = null
     private var mapView: MapView? = null
+    private var radius: Double? = null
     private val markers: List<Marker> = ArrayList()
     lateinit var latLngArray: Array<LatLng>
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +33,6 @@ class circlePolygon : AppCompatActivity(), OnMapReadyCallback, OnMapClickListene
         setContentView(R.layout.activity_main)
         mapView = findViewById(R.id.mapView)
 
-        // Initialize the map settings
         mapView!!.getMapAsync(this@circlePolygon)
         mapView!!.onCreate(savedInstanceState)
     }
@@ -43,49 +43,35 @@ class circlePolygon : AppCompatActivity(), OnMapReadyCallback, OnMapClickListene
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         try {
-            /*val circleOptions = CircleOptions()
-            latLngArray = readCoordinatesFromRawResource(R.raw.new_json_file)
-            for (latLng in latLngArray) {
-                circleOptions.center(latLng)
-                        .radius(7400.0) // Radius in meters
-                        .strokeWidth(2f)
-                        .strokeColor(Color.BLACK)
-                        .fillColor(0x30ff0000)
-                circle = mMap!!.addCircle(circleOptions)
-            }
-            mMap!!.setOnMapClickListener(this)
-
-
-            // Move the camera to the last LatLng in the array
-            if (latLngArray.size > 0) {
-                mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngArray[latLngArray.size - 1], 10f))
-            }*/
 
 
             val circleOptions = CircleOptions()
             latLngArray = readCoordinatesFromRawResource(R.raw.new_json_file)
 
-// Find the bounds that encompass all LatLng coordinates
             val builder = LatLngBounds.builder()
             for (latLng in latLngArray) {
                 builder.include(latLng)
             }
             val bounds = builder.build()
 
-// Calculate the center of the bounding box
             val center = bounds.center
 
-// Calculate the radius based on the distance from the center to a corner of the bounding box
-            val radius = calculateRadius(center, bounds.southwest)
+            radius = calculateRadius(center, bounds.southwest)
 
-// Create a single circle that encompasses all coordinates
             circleOptions.center(center)
-                    .radius(radius)
+                    .radius(radius!!)
                     .strokeWidth(2f)
                     .strokeColor(Color.BLACK)
                     .fillColor(0x30ff0000)
 
             circle = mMap?.addCircle(circleOptions)
+
+            circle!!.isClickable = true
+
+            mMap!!.setOnCircleClickListener {
+                Toast.makeText(this, "You clicked the circle!", Toast.LENGTH_SHORT).show()
+            }
+
             if (latLngArray.size > 0) {
                 mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngArray[latLngArray.size - 1], 10f))
             }
@@ -127,12 +113,19 @@ class circlePolygon : AppCompatActivity(), OnMapReadyCallback, OnMapClickListene
     }
 
     override fun onMapClick(latLng: LatLng) {
-        for (circleCenter in latLngArray) {
-            if (SphericalUtil.computeDistanceBetween(latLng, circleCenter) <= 7400) {
-                // Display a Toast message when a circle is clicked
-                Toast.makeText(this, "New York Circle Clicked", Toast.LENGTH_SHORT).show()
-            }
+        val distance = FloatArray(1)
+
+        val clicked = distance[0] < radius!!
+
+        if (clicked){
+            Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show()
         }
+        else{
+            Toast.makeText(this, "not clicked", Toast.LENGTH_SHORT).show()
+        }
+
+
+
     }
 
     override fun onResume() {

@@ -19,15 +19,13 @@ import com.example.myapplication.mapClusterUtils.map.MapMarkersRenderer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
+import com.google.android.gms.maps.GoogleMap.OnPolygonClickListener
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.PolygonOptions
-import com.google.maps.android.SphericalUtil
 import com.google.maps.android.clustering.Cluster
 import com.google.maps.android.clustering.ClusterManager
 import kotlinx.coroutines.CoroutineScope
@@ -42,17 +40,22 @@ import java.io.IOException
 import java.util.Scanner
 import kotlin.math.absoluteValue
 
+import android.graphics.Path
+import android.graphics.PointF
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Polygon
+import com.google.maps.android.PolyUtil
 
 class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickListener,
-    MapMarkersRenderer.Callback {
+    MapMarkersRenderer.Callback, OnPolygonClickListener {
     private var mMap: GoogleMap? = null
     private var mapView: MapView? = null
-    lateinit var latLngArray: Array<LatLng>
+    private var latLngArray: Array<LatLng>? = null
     private var polygon: Polygon? = null
     private var circle: Circle? = null
+    private var key: String? = null
     private var rectangle: Polygon? = null
     private val polygons: MutableList<Polygon> = ArrayList()
-
 
 
     private val mapHolder = MapHolder()
@@ -85,7 +88,6 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
         }
 
     }
-
     fun addNew(context: Context, resourceId: Int) {
         val inputStream = context.resources.openRawResource(resourceId)
         val jsonString = inputStream.bufferedReader().use { it.readText() }
@@ -115,20 +117,133 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
 
         drawLinesofTwoCordinates()
         drawCircleofGivenCordinates()
-        drawRectangleofGivenCordinates()
-        drawMarkersonMap()
+        //drawRectangleofGivenCordinates() --> No Longer useful
+        //rectangle1()                     --> No Longer useful
+        //rectangle2()                     --> No Longer useful
 
+
+     //   for rec in recti {
+
+     //   }
+        drawRectDynamic(R.raw.new_json_file, "rectangle")
+        drawRectDynamic(R.raw.new_json_file, "z_shape")
+        drawRectDynamic(R.raw.new_json_file, "zig_zag_shape")
+
+        mMap!!.setOnMapClickListener(OnMapClickListener { latLng ->
+            for (polygon in polygons) {
+                if (isPointInPolygon(latLng, polygon)) {
+                    // Handle the click on the polygon here
+                    Toast.makeText(this, "clicked", Toast.LENGTH_SHORT).show()
+
+                }
+            }
+            /*// Click listener for rectangle 1
+             for (polygon in polygons) {
+                 if (isPointInPolygon(latLng, polygon)) {
+                     // Display a Toast message when a polygon is clicked
+                     Toast.makeText(applicationContext, "rectangle Clicked!", Toast.LENGTH_SHORT)
+                         .show()
+                     return@OnMapClickListener
+                 }
+             }
+             // Click listener for rectangle 2
+
+             for (polygon in polygons1) {
+                 if (isPointInPolygon(latLng, polygon)) {
+                     // Display a Toast message when a polygon is clicked
+                     Toast.makeText(applicationContext, "z_shape Clicked!", Toast.LENGTH_SHORT)
+                         .show()
+                     return@OnMapClickListener
+                 }
+             }
+             // Click listener for rectangle 3
+
+             for (polygon in polygons3) {
+                 if (isPointInPolygon(latLng, polygon)) {
+                     // Display a Toast message when a polygon is clicked
+                     Toast.makeText(applicationContext, "zig_zag_shape Clicked!", Toast.LENGTH_SHORT)
+                         .show()
+                     return@OnMapClickListener
+                 }
+             }*/
+        })
+
+        drawMarkersonMap()
+    }
+
+    private fun drawRectDynamic(resourceId: Int, name: String) {
+        try {
+            val inputStream = resources.openRawResource(resourceId)
+            val jsonString = inputStream.bufferedReader().use { it.readText() }
+            val jsonObject = JSONObject(jsonString)
+            val rectangleCoordinates = jsonObject.getJSONObject(name)
+
+
+
+            val rectangleCoordinates1 = rectangleCoordinates.getJSONArray("coordinates")
+
+            val coordinatesList = ArrayList<LatLng>()
+            for (i in 0 until rectangleCoordinates1.length()) {
+                val coordinate = rectangleCoordinates1.getJSONObject(i)
+                val latitude = coordinate.getDouble("latitude")
+                val longitude = coordinate.getDouble("longitude")
+                coordinatesList.add(LatLng(latitude, longitude))
+            }
+
+            val rectOptions = PolygonOptions()
+            coordinatesList.forEach { latLng ->
+                rectOptions.add(latLng)
+            }
+            rectOptions.strokeWidth(5f)
+            rectOptions.strokeColor(Color.BLUE)
+            rectOptions.fillColor(Color.argb(70, 0, 0, 255)) // Blue with transparency
+            // Set the polygon's clickable property to true.
+            polygon!!.isClickable = true
+
+
+            mMap!!.addPolygon(rectOptions)
+
+            polygons.add(mMap!!.addPolygon(rectOptions))
+
+            // Create a bounds builder and include the rectangle's coordinates
+            val boundsBuilder = LatLngBounds.builder()
+            for (latLng in coordinatesList) {
+                boundsBuilder.include(latLng)
+            }
+
+            val cu = CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100)
+            mMap!!.animateCamera(cu)
+
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
     }
+
+
+    private fun isPointInPolygon(point: LatLng, polygon: Polygon): Boolean {
+        val vertices = polygon.points
+
+        val latLngList = vertices.map { it }
+
+        return PolyUtil.containsLocation(point, latLngList, false)
+    }
+    override fun onMapClick(latLng: LatLng) {
+
+    }
+
     // Define a function to get the location name from LatLng
     fun getLocationNameFromLatLng(lat: Double, lon: Double): String {
-        val geocoder = Geocoder(this@allInOneMapScreen) // Replace 'context' with your Android application context
+        val geocoder =
+            Geocoder(this@allInOneMapScreen) // Replace 'context' with your Android application context
 
         try {
             val addresses = geocoder.getFromLocation(lat, lon, 1)
             if (addresses!!.isNotEmpty()) {
                 val address = addresses[0]
-                val locationName = address.getAddressLine(0) // This could be any part of the address, e.g., locality, admin area, etc.
+                val locationName =
+                    address.getAddressLine(0) // This could be any part of the address, e.g., locality, admin area, etc.
                 return locationName
             }
         } catch (e: IOException) {
@@ -221,10 +336,11 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
             boundariesListener = boundariesListener,
         )
 
-        clusterManager.setOnClusterClickListener(object : ClusterManager.OnClusterClickListener<MapMarker> {
+        clusterManager.setOnClusterClickListener(object :
+            ClusterManager.OnClusterClickListener<MapMarker> {
             override fun onClusterClick(cluster: Cluster<MapMarker>): Boolean {
                 if (cluster.items.size > 1) {
-                   // Toast.makeText(this@allInOneMapScreen,"hello",Toast.LENGTH_SHORT).show()
+                    // Toast.makeText(this@allInOneMapScreen,"hello",Toast.LENGTH_SHORT).show()
                     mMap!!.animateCamera(
                         CameraUpdateFactory.newLatLngZoom(
                             cluster.position, Math.floor(
@@ -241,51 +357,6 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
 
     }
 
-    private fun drawRectangleofGivenCordinates() {
-        try {
-            // Read JSON data from the file
-            val json = loadJSONFromRawResource(R.raw.new_json_file)
-            val jsonObject = JSONObject(json)
-
-            // Extract corner coordinates from the JSON data
-            val corner1 = getLatLngFromJsonObject(
-                jsonObject.getJSONObject("rectangle").getJSONObject("corner1")
-            )
-            val corner2 = getLatLngFromJsonObject(
-                jsonObject.getJSONObject("rectangle").getJSONObject("corner2")
-            )
-            val corner3 = getLatLngFromJsonObject(
-                jsonObject.getJSONObject("rectangle").getJSONObject("corner3")
-            )
-            val corner4 = getLatLngFromJsonObject(
-                jsonObject.getJSONObject("rectangle").getJSONObject("corner4")
-            )
-
-            val polygonOptions = PolygonOptions()
-                .add(corner1, corner2, corner3, corner4)
-                .strokeWidth(10f)
-                .strokeColor(-0xffff01) // Blue color for the rectangle border
-                .fillColor(-0x7fffff01) // Semi-transparent blue for the rectangle fill
-            rectangle = mMap!!.addPolygon(polygonOptions)
-            polygons.add(rectangle!!)
-
-            val centerLat = (corner1.latitude + corner3.latitude) / 2
-            val centerLng = (corner1.longitude + corner3.longitude) / 2
-            val centerLatLng = LatLng(centerLat, centerLng)
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
-        mMap!!.setOnMapClickListener(OnMapClickListener { latLng ->
-            for (polygon in polygons) {
-                if (isPointInPolygon(latLng, polygon)) {
-                    // Display a Toast message when a polygon is clicked
-                    Toast.makeText(applicationContext, "Rectangle Clicked!", Toast.LENGTH_SHORT)
-                        .show()
-                    return@OnMapClickListener
-                }
-            }
-        })
-    }
 
     private fun loadJSONFromRawResource(rawResourceId: Int): String? {
         return try {
@@ -306,48 +377,55 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
         return LatLng(latitude, longitude)
     }
 
-    private fun isPointInPolygon(point: LatLng, polygon: Polygon): Boolean {
-        val polygonPoints = polygon.points
-        var crossings = 0
-        for (i in polygonPoints.indices) {
-            val a = polygonPoints[i]
-            val b = polygonPoints[(i + 1) % polygonPoints.size]
-            if (a.latitude > point.latitude != b.latitude > point.latitude && point.longitude < (b.longitude - a.longitude) * (point.latitude - a.latitude) / (b.latitude - a.latitude) + a.longitude) {
-                crossings++
-            }
-        }
-        return crossings % 2 != 0
+
+    fun calculateRadius(center: LatLng, corner: LatLng): Double {
+        val results = FloatArray(1)
+        Location.distanceBetween(
+            center.latitude,
+            center.longitude,
+            corner.latitude,
+            corner.longitude,
+            results
+        )
+        return results[0].toDouble()
     }
+
+
 
     private fun drawCircleofGivenCordinates() {
         try {
+
             val circleOptions = CircleOptions()
             latLngArray = readCoordinatesFromRawResource(R.raw.new_json_file)
+
             val builder = LatLngBounds.builder()
-            for (latLng in latLngArray) {
+            for (latLng in latLngArray!!) {
                 builder.include(latLng)
             }
             val bounds = builder.build()
+
             val center = bounds.center
-            val results = FloatArray(1)
-            Location.distanceBetween(
-                center.latitude,
-                center.longitude,
-                bounds.southwest.latitude,
-                bounds.southwest.longitude,
-                results
-            )
-            val radius = results[0].toDouble()
+
+            val radius = calculateRadius(center, bounds.southwest)
+
             circleOptions.center(center)
-                .radius(radius)
+                .radius(radius!!)
                 .strokeWidth(2f)
                 .strokeColor(Color.BLACK)
                 .fillColor(0x30ff0000)
 
             circle = mMap?.addCircle(circleOptions)
 
+            circle!!.isClickable = true
+
+            mMap!!.setOnCircleClickListener {
+                Toast.makeText(this, "You clicked the circle!", Toast.LENGTH_SHORT).show()
+            }
+
+
+
             mMap!!.setOnMapClickListener(this)
-            if (latLngArray.size > 0) {
+            if (latLngArray!!.size > 0) {
             }
         } catch (e: NullPointerException) {
             Toast.makeText(this, "image is null", Toast.LENGTH_SHORT).show()
@@ -424,14 +502,6 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
         return null
     }
 
-    override fun onMapClick(latLng: LatLng) {
-        for (circleCenter in latLngArray) {
-            if (SphericalUtil.computeDistanceBetween(latLng, circleCenter) <= 7400) {
-                // Display a Toast message when a circle is clicked
-                Toast.makeText(this, "New York Circle Clicked", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
     override fun onResume() {
         super.onResume()
@@ -459,5 +529,8 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         mapView!!.onSaveInstanceState(outState)
+    }
+
+    override fun onPolygonClick(p0: Polygon) {
     }
 }
