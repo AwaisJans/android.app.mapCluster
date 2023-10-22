@@ -1,10 +1,11 @@
-package com.example.myapplication
+package com.example.myapplication.activities
 
 import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener

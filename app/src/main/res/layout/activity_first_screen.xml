@@ -6,7 +6,7 @@
     android:gravity="center"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".linePolygon">
+    tools:context=".activities.linePolygon">
 
     <!-- Button to request permissions -->
     <Button

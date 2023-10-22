@@ -1,4 +1,4 @@
-package com.example.myapplication.dynamicpinsview
+package com.example.myapplication.mapClusterUtils
 
 import android.content.Context
 import android.util.TypedValue

@@ -23,23 +23,23 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
-            android:name=".linePolygon"
+            android:name=".activities.linePolygon"
             android:exported="false" />
 
         <activity
-            android:name=".circlePolygon"
+            android:name=".activities.circlePolygon"
             android:exported="false" />
 
         <activity
-            android:name=".rectangleMap"
+            android:name=".activities.rectangleMap"
             android:exported="false" />
 
         <activity
-            android:name=".allInOneMapScreen"
+            android:name=".activities.allInOneMapScreen"
             android:exported="false" />
 
         <activity
-            android:name=".firstScreen"
+            android:name=".activities.firstScreen"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

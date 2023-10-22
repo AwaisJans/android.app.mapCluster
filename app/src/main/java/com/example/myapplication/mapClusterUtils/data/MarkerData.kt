@@ -1,4 +1,4 @@
-package com.example.myapplication.dynamicpinsview.data
+package com.example.myapplication.mapClusterUtils.data
 
 typealias MarkerData = Map<String, Any>
 

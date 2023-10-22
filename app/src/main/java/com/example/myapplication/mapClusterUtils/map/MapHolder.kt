@@ -1,9 +1,9 @@
-package com.example.myapplication.dynamicpinsview.map
+package com.example.myapplication.mapClusterUtils.map
 
 import com.google.android.gms.maps.GoogleMap
 import com.google.maps.android.clustering.ClusterManager
-import com.example.myapplication.dynamicpinsview.listener.BoundariesListener
-import com.example.myapplication.dynamicpinsview.listener.OnCameraIdleListenerProxy
+import com.example.myapplication.mapClusterUtils.listener.BoundariesListener
+import com.example.myapplication.mapClusterUtils.listener.OnCameraIdleListenerProxy
 
 internal class MapHolder {
 

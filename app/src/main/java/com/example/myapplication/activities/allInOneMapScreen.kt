@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.activities
 
 import android.content.Context
 import android.graphics.Color
@@ -8,14 +8,14 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Transformations.map
-import com.example.myapplication.dynamicpinsview.data.MarkerData
-import com.example.myapplication.dynamicpinsview.data.lat
-import com.example.myapplication.dynamicpinsview.data.lon
-import com.example.myapplication.dynamicpinsview.listener.BoundariesListener
-import com.example.myapplication.dynamicpinsview.map.MapHolder
-import com.example.myapplication.dynamicpinsview.map.MapMarker
-import com.example.myapplication.dynamicpinsview.map.MapMarkersRenderer
+import com.example.myapplication.R
+import com.example.myapplication.mapClusterUtils.data.MarkerData
+import com.example.myapplication.mapClusterUtils.data.lat
+import com.example.myapplication.mapClusterUtils.data.lon
+import com.example.myapplication.mapClusterUtils.listener.BoundariesListener
+import com.example.myapplication.mapClusterUtils.map.MapHolder
+import com.example.myapplication.mapClusterUtils.map.MapMarker
+import com.example.myapplication.mapClusterUtils.map.MapMarkersRenderer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
@@ -77,7 +77,7 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
 
         // cluster code
 
-        addNew(this@allInOneMapScreen,R.raw.new_json_file)
+        addNew(this@allInOneMapScreen, R.raw.new_json_file)
 
 
         scope.launch {
@@ -153,7 +153,7 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
                 location = LatLng(item.lat, item.lon),
                 titleText = getLocationNameFromLatLng(item.lat, item.lon),
                 icon = MapMarker.Icon.Placeholder(""),
-                pinColor = allInOneMapScreen.COLORS[item.hashCode().absoluteValue.rem(10)]
+                pinColor = COLORS[item.hashCode().absoluteValue.rem(10)]
             )
         }.apply { setMarkers(this) }
     }

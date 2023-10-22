@@ -1,4 +1,4 @@
-package com.example.myapplication.dynamicpinsview.map
+package com.example.myapplication.mapClusterUtils.map
 
 import android.graphics.Bitmap
 import androidx.annotation.ColorInt
