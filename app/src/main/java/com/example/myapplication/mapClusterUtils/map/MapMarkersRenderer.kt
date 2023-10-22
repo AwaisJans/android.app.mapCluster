@@ -1,4 +1,4 @@
-package com.example.myapplication.dynamicpinsview.map
+package com.example.myapplication.mapClusterUtils.map
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.collection.LruCache
-import com.example.myapplication.BuildConfig
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -16,7 +15,7 @@ import com.google.maps.android.clustering.Cluster
 import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.clustering.view.DefaultClusterRenderer
 import com.google.maps.android.ui.IconGenerator
-import com.example.myapplication.dynamicpinsview.dpToPx
+import com.example.myapplication.mapClusterUtils.dpToPx
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 import java.util.*

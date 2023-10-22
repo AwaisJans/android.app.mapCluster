@@ -1,4 +1,4 @@
-package com.example.myapplication.dynamicpinsview.map
+package com.example.myapplication.mapClusterUtils.map
 
 import android.content.Context
 import android.content.res.ColorStateList
