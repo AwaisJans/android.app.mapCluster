@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.R
+import com.example.myapplication.dataClass.GeometeryObjectModel
 import com.example.myapplication.mapClusterUtils.data.MarkerData
 import com.example.myapplication.mapClusterUtils.data.lat
 import com.example.myapplication.mapClusterUtils.data.lon
@@ -24,8 +25,13 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.PolygonOptions
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonSyntaxException
+import com.google.maps.android.PolyUtil
 import com.google.maps.android.clustering.Cluster
 import com.google.maps.android.clustering.ClusterManager
 import kotlinx.coroutines.CoroutineScope
@@ -33,18 +39,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import org.json.JSONTokener
 import java.io.IOException
 import java.util.Scanner
 import kotlin.math.absoluteValue
 
-import android.graphics.Path
-import android.graphics.PointF
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Polygon
-import com.google.maps.android.PolyUtil
 
 class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickListener,
     MapMarkersRenderer.Callback, OnPolygonClickListener {
@@ -55,6 +57,10 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
     private var circle: Circle? = null
     private var key: String? = null
     private var rectangle: Polygon? = null
+    private val rectangles: MutableList<Polygon> = ArrayList()
+    private val circles: MutableList<Circle> = ArrayList()
+
+
     private val polygons: MutableList<Polygon> = ArrayList()
 
 
@@ -80,14 +86,15 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
 
         // cluster code
 
-        addNew(this@allInOneMapScreen, R.raw.new_json_file)
+        /*addNew(this@allInOneMapScreen, R.raw.new_json_file)
 
 
         scope.launch {
             boundariesFlow.collect { update -> reloadData(update) }
-        }
+        }*/
 
     }
+
     fun addNew(context: Context, resourceId: Int) {
         val inputStream = context.resources.openRawResource(resourceId)
         val jsonString = inputStream.bufferedReader().use { it.readText() }
@@ -98,10 +105,10 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
 
         for (i in 0 until jsonArray.length()) {
             val coordinate = jsonArray.getJSONObject(i)
-            val latitude = coordinate.getDouble("lat")
-            val longitude = coordinate.getDouble("lon")
+            val latitude = coordinate.getDouble("latitude")
+            val longitude = coordinate.getDouble("longitude")
 
-            val markerData = mapOf("lat" to latitude, "lon" to longitude)
+            val markerData = mapOf("latitude" to latitude, "longitude" to longitude)
             locations.add(markerData)
         }
     }
@@ -115,19 +122,22 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
             Toast.makeText(this, "Error....", Toast.LENGTH_SHORT).show()
         }
 
-        drawLinesofTwoCordinates()
-        drawCircleofGivenCordinates()
+        //drawLinesofTwoCordinates()
+        // drawCircleofGivenCordinates()
+
         //drawRectangleofGivenCordinates() --> No Longer useful
         //rectangle1()                     --> No Longer useful
         //rectangle2()                     --> No Longer useful
 
 
-     //   for rec in recti {
 
-     //   }
-        drawRectDynamic(R.raw.new_json_file, "rectangle")
-        drawRectDynamic(R.raw.new_json_file, "z_shape")
-        drawRectDynamic(R.raw.new_json_file, "zig_zag_shape")
+
+
+        jsonParsing()
+        Log.e("Jans", "HW")
+        //drawRectDynamic(R.raw.new_json_file, "rectangle")
+        //drawRectDynamic(R.raw.new_json_file, "z_shape")
+        //drawRectDynamic(R.raw.new_json_file, "zig_zag_shape")
 
         mMap!!.setOnMapClickListener(OnMapClickListener { latLng ->
             for (polygon in polygons) {
@@ -168,57 +178,86 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
              }*/
         })
 
-        drawMarkersonMap()
+        //drawMarkersonMap()
     }
 
-    private fun drawRectDynamic(resourceId: Int, name: String) {
+    private fun jsonParsing() {
+
+
+        mMap!!.moveCamera(CameraUpdateFactory.newLatLng(LatLng(34.014581028940114, 71.52701810263859)),)
+        mMap!!.animateCamera(CameraUpdateFactory.zoomTo(5f))
+
+        val gson = GsonBuilder().create()?.let { it } ?: return
+
         try {
-            val inputStream = resources.openRawResource(resourceId)
-            val jsonString = inputStream.bufferedReader().use { it.readText() }
-            val jsonObject = JSONObject(jsonString)
-            val rectangleCoordinates = jsonObject.getJSONObject(name)
+            val geometeryItems = resources.openRawResource(R.raw.new_json_file)
+                .bufferedReader().use { it.readText() }
+
+            val geometerySingle =
+                gson.fromJson(geometeryItems, GeometeryObjectModel::class.java)?.let { it }
+                    ?: return
+
+            for (i in 0 until geometerySingle.itemsEntity.size) {
+                // add item entity in array
+
+                Log.e("items", "${geometerySingle.itemsEntity[i].type}")
+                val typeItem = geometerySingle.itemsEntity[i].type
+
+                if (typeItem == "circle") {
+                    for (f in 0 until geometerySingle.itemsEntity[i].coordinatesEntity.size) {
+                        // add item entity in array
+
+                        Log.e("itemCors", "${typeItem}")
+                        val cordinate = geometerySingle.itemsEntity[i].coordinatesEntity[f]
+
+                        val latitude = cordinate.latitude
+                        val longitude = cordinate.longitude
+
+                        Log.e(
+                            "newLatLng",
+                            "lat -> " + latitude.toString() +
+                                    "long -> " + longitude.toString()
+                        )
+                        val coordinates: MutableList<LatLng> = ArrayList()
+
+                        coordinates.add(LatLng(latitude, longitude))
+
+                        drawCircleofGivenCordinates(coordinates.toTypedArray())
 
 
+                        // val fetchCircle =  CircleOptions
+                        //  circles.add(fetchCircle)
 
-            val rectangleCoordinates1 = rectangleCoordinates.getJSONArray("coordinates")
 
-            val coordinatesList = ArrayList<LatLng>()
-            for (i in 0 until rectangleCoordinates1.length()) {
-                val coordinate = rectangleCoordinates1.getJSONObject(i)
-                val latitude = coordinate.getDouble("latitude")
-                val longitude = coordinate.getDouble("longitude")
-                coordinatesList.add(LatLng(latitude, longitude))
+                    }
+                }
+
             }
 
-            val rectOptions = PolygonOptions()
-            coordinatesList.forEach { latLng ->
-                rectOptions.add(latLng)
-            }
-            rectOptions.strokeWidth(5f)
-            rectOptions.strokeColor(Color.BLUE)
-            rectOptions.fillColor(Color.argb(70, 0, 0, 255)) // Blue with transparency
-            // Set the polygon's clickable property to true.
-            polygon!!.isClickable = true
 
-
-            mMap!!.addPolygon(rectOptions)
-
-            polygons.add(mMap!!.addPolygon(rectOptions))
-
-            // Create a bounds builder and include the rectangle's coordinates
-            val boundsBuilder = LatLngBounds.builder()
-            for (latLng in coordinatesList) {
-                boundsBuilder.include(latLng)
-            }
-
-            val cu = CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100)
-            mMap!!.animateCamera(cu)
-
-
-        } catch (e: Exception) {
+        } catch (e: JSONException) {
+            // if output is not in json format
+            // json exception
             e.printStackTrace()
-        }
 
+        }
+        catch (exception: IllegalStateException) {
+            // response is not json format
+            // json exception
+
+            exception.printStackTrace()
+            Log.e("showInternetErrorDialog", "hhh")
+
+
+        }
+        catch (exception: JsonSyntaxException) {
+            // response is not json format
+            // json exception
+
+            exception.printStackTrace()
+            Log.e("showInternetErrorDialog", "syntax")
+
+        }
     }
 
 
@@ -229,6 +268,7 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
 
         return PolyUtil.containsLocation(point, latLngList, false)
     }
+
     override fun onMapClick(latLng: LatLng) {
 
     }
@@ -391,45 +431,39 @@ class allInOneMapScreen : AppCompatActivity(), OnMapReadyCallback, OnMapClickLis
     }
 
 
+    private fun drawCircleofGivenCordinates(arrayLatLng: Array<LatLng>) {
+        val circleOptions = CircleOptions()
 
-    private fun drawCircleofGivenCordinates() {
-        try {
-
-            val circleOptions = CircleOptions()
-            latLngArray = readCoordinatesFromRawResource(R.raw.new_json_file)
-
-            val builder = LatLngBounds.builder()
-            for (latLng in latLngArray!!) {
-                builder.include(latLng)
-            }
-            val bounds = builder.build()
-
-            val center = bounds.center
-
-            val radius = calculateRadius(center, bounds.southwest)
-
-            circleOptions.center(center)
-                .radius(radius!!)
-                .strokeWidth(2f)
-                .strokeColor(Color.BLACK)
-                .fillColor(0x30ff0000)
-
-            circle = mMap?.addCircle(circleOptions)
-
-            circle!!.isClickable = true
-
-            mMap!!.setOnCircleClickListener {
-                Toast.makeText(this, "You clicked the circle!", Toast.LENGTH_SHORT).show()
-            }
-
-
-
-            mMap!!.setOnMapClickListener(this)
-            if (latLngArray!!.size > 0) {
-            }
-        } catch (e: NullPointerException) {
-            Toast.makeText(this, "image is null", Toast.LENGTH_SHORT).show()
+        val builder = LatLngBounds.builder()
+        for (latLng in arrayLatLng) {
+            builder.include(latLng)
         }
+        val bounds = builder.build()
+
+        val center = bounds.center
+
+        val radius = calculateRadius(center, bounds.southwest)
+
+        circleOptions.center(center)
+            .radius(radius)
+            .strokeWidth(2f)
+            .strokeColor(Color.BLACK)
+            .fillColor(0x30ff0000)
+
+        circle = mMap?.addCircle(circleOptions)
+
+        circle!!.isClickable = true
+
+        mMap!!.setOnCircleClickListener {
+            Toast.makeText(this, "You clicked the circle!", Toast.LENGTH_SHORT).show()
+        }
+
+
+
+        mMap!!.setOnMapClickListener(this)
+        if (latLngArray!!.size > 0) {
+        }
+
     }
 
     private fun drawLinesofTwoCordinates() {

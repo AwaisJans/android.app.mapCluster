@@ -36,6 +36,11 @@ android {
 }
 
 dependencies {
+    // librray for json duplication
+    implementation files('libs/json-lib-2.4-jdk15.jar')
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.12.5'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.12.5'
 
 
 
@@ -43,7 +48,7 @@ dependencies {
     implementation 'com.google.maps.android:android-maps-utils:2.3.0'
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'com.squareup.picasso:picasso:2.8'
-   // implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    // implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     //implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     testImplementation 'net.coobird:thumbnailator:0.4.18'
 
